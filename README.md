@@ -10,6 +10,24 @@ You can download the system image the following links:
 
 You can find detailed installation guidelines for the system image [here](https://docs.interpretable.ai/stable/installation/).
 
+# Algorithm Guidelines
+
+The main command to run the algorithm on a dataset `X` is `ICOT.fit!(learner, X, y);` where the `y` can refer to some data partition that is associated with the dataset. The `learner` is defined as an `ICOT.InterpretableCluster()` object with the following parameters:
+* `criterion`
+* `ls_warmstart_criterion`
+* `kmeans_warmstart`
+* `geom_search`
+* `geom_threshold`
+* `minbucket`
+* `max_depth`
+* `ls_random_seed`
+* `cp`
+* `ls_num_tree_restarts`
+
+You can visualize your model on a browser using the `ICOT.showinbrowser()` command.
+
+We have added an example for the ruspini dataset in the `src` folder called `runningICOT_example.jl`.
+
 # Citing ICOT
 If you use ICOT in your research, we kindly ask that you reference the original [paper](https://link.springer.com/article/10.1007/s10994-020-05896-2) that first introduced the algorithm:
 
