@@ -18,11 +18,11 @@ The main command to run the algorithm on a dataset `X` is `ICOT.fit!(learner, X,
 * `kmeans_warmstart`
 * `geom_search`
 * `geom_threshold`
-* `minbucket`
-* `max_depth`
-* `ls_random_seed`
-* `cp`
-* `ls_num_tree_restarts`
+* `minbucket`: controls the minimum number of points that must be present in every leaf node of the fitted tree. 
+* `max_depth`: accepts a non-negative Integer to control the maximum depth of the fitted tree. This parameter must always be explicitly set or tuned. We recommend tuning this parameter using the grid search process described in the guide to parameter tuning.
+* `ls_random_seed`: is an Integer controling the randomized state of the algorithm. We recommend to set the seed to ensure reproducability of results.
+* `ls_num_tree_restarts`: is an Integer specifying the number of random restarts to use in the local search algorithm. Must be positive and defaults to 100. The performance of the tree typically increases as this value is increased, but with quickly diminishing returns. The computational cost of training increases linearly with this value. 
+* `cp`:  the complexity parameter that determines the tradeoff between the accuracy and complexity of the tree to control overfitting. Given the internal validation criteria used for the algorithm, we recommend to set the value to 0.0.
 
 You can visualize your model on a browser using the `ICOT.showinbrowser()` command.
 
