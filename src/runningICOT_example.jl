@@ -1,13 +1,26 @@
 using DataFrames, MLDataUtils
 using Clustering, Distances
-using BenchmarkTools
-using Test, CSV
+using CSV
 using Random
 using Logging
 
-# Set up Logging
+# Set up Logging - we recommend to use this command to avoid package warnings during the model training process.
 logger = Logging.SimpleLogger(stderr,Logging.Warn);
 global_logger(logger);
+
+# Read the data - recommend the use of the readtable() command to avoid conflicts with the CSV package.
+data = readtable("../data/ruspini.csv"); 
+
+# Convert the dataset to a matrix
+data_array = convert(Matrix{Float64}, data);
+# The ruspini dataset comes with pre - defined clusters that we will use as a point of reference for the K-means algorithm. 
+# Note that otherwise the elbow method is suggested.
+K = length(unique(data_array[:,end]))
+# Get the number of observations and features
+n, p = size(data_array)
+data_t = data_array';
+
+
 
 #Set parameters for the learners
 cr = :dunnindex
@@ -22,8 +35,6 @@ complexity_c = 0.0
 min_bucket = 10
 maxdepth = 5
 
-#Read the data
-data = readtable("../data/ruspini.csv"); 
 
 data_array = convert(Matrix{Float64}, data);
 K = length(unique(data_array[:,end]))
@@ -60,7 +71,7 @@ ICOT.IAI.fit!(grid, X, y)
 ICOT.IAI.showinbrowser(grid.lnr)
 
 ### ----------------- RUN ICOT ----------------- ###
-include("ICOT.jl")
+# include("ICOT.jl")
 # Create the local search learner - greedy warm start
 warm_start= :greedy
 lnr_ws_greedy = ICOT.InterpretableCluster(ls_num_tree_restarts = num_tree_restarts, ls_random_seed = seed, cp = complexity_c, max_depth = maxdepth,
