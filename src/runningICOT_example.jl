@@ -3,7 +3,6 @@ using Clustering, Distances
 using CSV
 using Random
 using Logging
-using Test
 
 # Set up Logging - we recommend to use this command to avoid package warnings during the model training process.
 logger = Logging.SimpleLogger(stderr,Logging.Warn);
@@ -31,9 +30,6 @@ data_array = convert(Matrix{Float64}, data);
 # Get the number of observations and features
 n, p = size(data_array)
 data_t = data_array';
-@test n==size(data_t,2)
-@test p==size(data_t,1)
-
 
 ##### Step 2: Fit K-means clustering on the dataset to generate a warm-start for ICOT
 #Fix the seed
@@ -46,15 +42,12 @@ K = length(unique(data_array[:,end]))
 # Run k-means and save the assignments 
 kmeans_result = kmeans(data_t, K);
 assignment = kmeans_result.assignments;
-@test K==length(unique(assignment))
 
 data_full = DataFrame(hcat(data, assignment, makeunique=true));
 names!(data_full, [:x1, :x2, :true_labels, :kmean_assign]);
 
 # Prepare data for ICOT: features are stored in the matrix X, and the warm-start labels are stored in y
 X = data_full[:,1:2]; y = data_full[:,:true_labels];
-@test size(X,2)==p-1
-@test K==length(unique(y))
 
 ##### Step 3a. Before running ICOT, start by testing the IAI license
 lnr_oct = ICOT.IAI.OptimalTreeClassifier(localsearch = false, max_depth = maxdepth,
@@ -67,22 +60,17 @@ ICOT.IAI.showinbrowser(grid.lnr)
 
 ##### Step 3b. Run ICOT
 
-# Run ICOT with a greedy warm-start: 
-warm_start= :greedy
-lnr_ws_greedy = ICOT.InterpretableCluster(ls_num_tree_restarts = num_tree_restarts, ls_random_seed = seed, cp = complexity_c, max_depth = maxdepth,
+# Run ICOT with no warm-start: 
+warm_start= :none
+lnr_ws_none = ICOT.InterpretableCluster(ls_num_tree_restarts = num_tree_restarts, ls_random_seed = seed, cp = complexity_c, max_depth = maxdepth,
 	minbucket = min_bucket, criterion = cr, ls_warmstart_criterion = cr, kmeans_warmstart = warm_start,
 	geom_search = geom_search, geom_threshold = threshold);
-run_time_icot_ls_greedy = @elapsed ICOT.fit!(lnr_ws_greedy, X, y);
+run_time_icot_ls_none = @elapsed ICOT.fit!(lnr_ws_none, X, y);
 
-ICOT.showinbrowser(lnr_ws_greedy)
+ICOT.showinbrowser(lnr_ws_none)
 
-score_ws_greedy = ICOT.score(lnr_ws_greedy, X, y, criterion=:dunnindex);
-score_al_ws_greedy = ICOT.score(lnr_ws_greedy, X, y, criterion=:silhouette);
-
-@test score_ws_greedy ≈ lnr_ws_greedy.tree_.dunnindex_score atol=1e-8
-@test score_al_ws_greedy ≈ lnr_ws_greedy.tree_.silhouette_score atol=1e-8
-@test score_ws_greedy ≈ 0.5210140254379996 atol=1e-8
-@test score_al_ws_greedy ≈ 0.7399381248816937 atol=1e-8
+score_ws_none = ICOT.score(lnr_ws_none, X, y, criterion=:dunnindex);
+score_al_ws_none = ICOT.score(lnr_ws_none, X, y, criterion=:silhouette);
 
 # Run ICOT with an OCT warm-start: fit an OCT as a supervised learning problem with labels "y" and use this as the warm-start
 warm_start= :oct
@@ -94,14 +82,12 @@ run_time_icot_ls_oct = @elapsed ICOT.fit!(lnr_ws_oct, X, y);
 score_ws_oct = ICOT.score(lnr_ws_oct, X, y, criterion=:dunnindex);
 score_al_ws_oct = ICOT.score(lnr_ws_oct, X, y, criterion=:silhouette);
 
-@test score_ws_oct ≈ lnr_ws_oct.tree_.dunnindex_score atol=1e-8
-@test score_al_ws_oct ≈ lnr_ws_oct.tree_.silhouette_score atol=1e-8
-@test score_ws_oct ≈ 0.5210140254379996 atol=1e-8
-@test score_al_ws_oct ≈ 0.7399381248816937 atol=1e-8
-
 ##### Comments
-# Note that in this example, the OCT tree and ICOT (greedy and OCT warm-start) result in the same solution. 
+# Note that in this example, the OCT tree and ICOT (OCT warm-start, or no warm-start) result in the same solution. 
 # This is not generally the case, but can occur when the data is easily separated (as in the ruspini dataset)
 
-# For larger datasets, we recommend setting warm_start = :oct and threshold = 0.99 to improve the solve time.
+# The score printed in the browser view is negative to reflect the formulation as a minimization problem.
+# The positive score returned by the ICOT.score() functions reflect the "correct" interpretation of the score, 
+# in which we seek to maximize the criterion (with a maximum value of 1).
 
+# For larger datasets, we recommend setting warm_start = :oct and threshold = 0.99 to improve the solve time.
