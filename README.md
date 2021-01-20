@@ -1,5 +1,5 @@
 # Overview
-This is the documentation repository for the clustering algorithm of the paper "Interpretable Clustering: An Optimization Approach" by Dimitris Bertsimas, Agni Orfanoudaki, and Holly Wiberg. The purpose of this method, ICOT, is to generate interpretable tree-based clustering models. This code is compatible with Julia version 1.1.0, available for download [here](https://julialang.org/downloads/).
+This is the documentation repository for the clustering algorithm of the paper "Interpretable Clustering: An Optimization Approach" by Dimitris Bertsimas, Agni Orfanoudaki, and Holly Wiberg. The purpose of this method, ICOT, is to generate interpretable tree-based clustering models. This code runs in Julia version 1.1.0, available for download [here](https://julialang.org/downloads/) (Note: version 1.1.0 is required for compatibility).
 
 # Academic License and Installation
 The ICOT software package uses tools from the [Interpretable AI](https://www.interpretable.ai/) suite and thus it requires an academic license. 
